@@ -1,0 +1,24 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/shm.h>
+
+int main(int argc, char *argv[]) {
+    int n = atoi(argv[1]), n1 = 0, n2 = 1, n3;
+    void *ptr = shmat(shmget((key_t)1122, 4096, 0666), NULL, 0);
+
+    printf("CHILD:\n");
+    sprintf(ptr, "%d %d ", n1, n2);  // write first two
+    printf("%d %d ", n1, n2);
+    ptr += strlen(ptr);
+
+    for (int i = 2; i < n; i++) {
+        n3 = n1 + n2;
+        sprintf(ptr, "%d ", n3);
+        printf("%d ", n3);
+        ptr += strlen(ptr);
+        n1 = n2; n2 = n3;
+    }
+    shmctl(shmget((key_t)1122, 4096, 0666), IPC_RMID, NULL); // remove shm
+    return 0;
+}
